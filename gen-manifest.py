@@ -25,7 +25,8 @@ def consolidate_manifest():
 
                             # Extract the id and use the entire config.json as value
                             if 'id' in config_data:
-                                manifest[config_data['id']] = config_data
+                                manifest[config_data['id']] = {}
+                                manifest[config_data['id']]["data"] = config_data
                             else:
                                 print(f"Warning: 'id' missing in {file}'s config.json")
             except zipfile.BadZipFile:
