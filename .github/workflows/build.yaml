@@ -1,0 +1,65 @@
+name: "build"
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - v2
+
+jobs:
+  publish-extensions:
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: "ubuntu-22.04"
+
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Generate manifest
+        run: python3 gen-manifest.py
+
+      - name: Get release name
+        id: date
+        run: |
+          echo "{release_name}={Extensions release ($(date +'%Y-%m-%d'))}" >> $GITHUB_STATE
+
+      - name: Create Release
+        uses: actions/github-script@v2
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+            console.log('environment', process.versions);
+
+            const fs = require('fs').promises;
+
+            const { repo: { owner, repo }, sha } = context;
+            console.log({ owner, repo, sha });
+
+            const release = await github.repos.createRelease({
+              owner, repo,
+              tag_name: `release-${sha}`,
+              draft: false,
+              target_commitish: sha
+            });
+
+            console.log('created release', { release });
+
+            for (let file of await fs.readdir('./')) {
+              console.log('uploading', file);
+
+              if (file.endsWith('.mstx') || file.endsWith('.json') {
+                await github.repos.uploadReleaseAsset({
+                  owner, repo,
+                  release_id: release.data.id,
+                  name: file,
+                  data: await fs.readFile(`./${file}`)
+                });
+              }
+            }
