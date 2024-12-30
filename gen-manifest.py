@@ -1,13 +1,17 @@
 import os
+import shutil
 import zipfile
 import json
 
 # Directory path (current directory)
 cwd = os.getcwd()
 
-# Consolidated manifest
 def consolidate_manifest():
     manifest = {}
+
+    # Create 'dist' directory if it doesn't exist
+    dist_dir = os.path.join(cwd, 'dist')
+    os.makedirs(dist_dir, exist_ok=True)
 
     # Iterate through all .mstx files in the directory
     for file in os.listdir(cwd):
@@ -20,13 +24,19 @@ def consolidate_manifest():
                         # Extract and parse config.json
                         with zip_ref.open('config.json') as config_file:
                             config_data = json.load(config_file)
-                            if 'customCSS' in config_data['theme']:
-                                del config_data["theme"]["customCSS"]
+
+                            # Remove 'customCSS' from 'theme' if it exists
+                            if 'theme' in config_data and 'customCSS' in config_data['theme']:
+                                del config_data['theme']['customCSS']
 
                             # Extract the id and use the entire config.json as value
                             if 'id' in config_data:
-                                manifest[config_data['id']] = {}
-                                manifest[config_data['id']]["data"] = config_data
+                                id_value = config_data['id']
+                                manifest[id_value] = {"data": config_data}
+
+                                # Copy the .mstx file to the 'dist' directory with the new name
+                                new_filename = f"{id_value}.mstx"
+                                shutil.copy(file, os.path.join(dist_dir, new_filename))
                             else:
                                 print(f"Warning: 'id' missing in {file}'s config.json")
             except zipfile.BadZipFile:
@@ -34,8 +44,8 @@ def consolidate_manifest():
             except Exception as e:
                 print(f"Error processing {file}: {e}")
 
-    # Write the consolidated manifest to manifest.json
-    manifest_path = os.path.join(cwd, 'manifest.json')
+    # Write the consolidated manifest to manifest.json in 'dist'
+    manifest_path = os.path.join(dist_dir, 'manifest.json')
     with open(manifest_path, 'w') as manifest_file:
         json.dump(manifest, manifest_file, indent=4)
 
