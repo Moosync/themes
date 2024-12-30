@@ -20,7 +20,8 @@ def consolidate_manifest():
                         # Extract and parse config.json
                         with zip_ref.open('config.json') as config_file:
                             config_data = json.load(config_file)
-                            del config_data["customCSS"]
+                            if 'customCSS' in config_data['theme']:
+                                del config_data["theme"]["customCSS"]
 
                             # Extract the id and use the entire config.json as value
                             if 'id' in config_data:

@@ -52,9 +52,9 @@ jobs:
             console.log('created release', { release });
 
             for (let file of await fs.readdir('./')) {
-              console.log('uploading', file);
 
               if (file.endsWith('.mstx') || file.endsWith('.json')) {
+                console.log('uploading', file);
                 await github.repos.uploadReleaseAsset({
                   owner, repo,
                   release_id: release.data.id,
