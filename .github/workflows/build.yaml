@@ -7,7 +7,7 @@ on:
       - main
 
 jobs:
-  publish-extensions:
+  publish-themes:
     permissions:
       contents: write
     strategy:
@@ -28,7 +28,7 @@ jobs:
       - name: Get release name
         id: date
         run: |
-          echo "{release_name}={Extensions release ($(date +'%Y-%m-%d'))}" >> $GITHUB_STATE
+          echo "{release_name}={Themes release ($(date +'%Y-%m-%d'))}" >> $GITHUB_STATE
 
       - name: Create Release
         uses: actions/github-script@v2
@@ -54,7 +54,7 @@ jobs:
             for (let file of await fs.readdir('./')) {
               console.log('uploading', file);
 
-              if (file.endsWith('.mstx') || file.endsWith('.json') {
+              if (file.endsWith('.mstx') || file.endsWith('.json')) {
                 await github.repos.uploadReleaseAsset({
                   owner, repo,
                   release_id: release.data.id,
