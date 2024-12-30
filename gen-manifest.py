@@ -2,6 +2,7 @@ import os
 import shutil
 import zipfile
 import json
+import sys
 
 # Directory path (current directory)
 cwd = os.getcwd()
@@ -29,9 +30,12 @@ def consolidate_manifest():
                             if 'theme' in config_data and 'customCSS' in config_data['theme']:
                                 del config_data['theme']['customCSS']
 
-                            # Extract the id and use the entire config.json as value
+                            # Extract the id and check for conflicts
                             if 'id' in config_data:
                                 id_value = config_data['id']
+                                if id_value in manifest:
+                                    print(f"Error: Conflict detected for ID '{id_value}' in {file}")
+                                    sys.exit(1)
                                 manifest[id_value] = {"data": config_data}
 
                                 # Copy the .mstx file to the 'dist' directory with the new name
